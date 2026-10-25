@@ -59,13 +59,13 @@ incident-hub/
 [Arquitectura](docs/arquitectura.md) · [Branching](docs/branching.md) · [Backlog](docs/backlog.md) · [Deuda tecnica](docs/deuda-tecnica.md) · [Seguridad](docs/seguridad.md) · [Dependencias](docs/dependencias.md) · [Fallo controlado](docs/fallo-controlado.md) · [Estrategia de release](docs/estrategia-release.md) · [Evidencias](docs/evidencias.md)
 
 ## Responsables del equipo
-Proyecto individual; el trabajo se reparte entre tres usuarios propios para evidenciar contribuciones.
+Proyecto individual. Las contribuciones quedan identificadas por el usuario de Azure DevOps y por el tipo de trabajo.
 
 | Usuario | Rol | Responsabilidad |
 |---------|-----|-----------------|
-| (usuario 1) | Desarrollo | Base de datos, API de incidentes, frontend de lista |
-| (usuario 2) | DevOps | Pipelines, self-hosted agent, GitHub Actions, seguridad, release |
-| (usuario 3) | Desarrollo / QA | Operacion, bitacora, dashboard, pruebas |
+| Cesar Luis Gonzalez Garcia (cgonzalezg30@miumg.edu.gt) | Desarrollo y DevOps | Base de datos, API, frontend, pipelines, agente autohospedado, seguridad y release |
+
+Nota: el directorio institucional no permite invitar cuentas externas, por lo que no fue posible crear usuarios adicionales en la organizacion.
 
 ## Variables de entorno
 | Variable | Uso |

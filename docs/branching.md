@@ -19,7 +19,7 @@ Uso un flujo basado en `main` protegida (trunk-based con ramas cortas).
 5. Las versiones se marcan con tags SemVer `vMAJOR.MINOR.PATCH` sobre `main`.
 
 ## Politica de rama `main` (Azure Repos -> Branch policies)
-- Requerir minimo 1 revisor (distinto al autor).
+- Requerir minimo 1 revisor; al ser proyecto individual se permite la aprobacion del autor, documentada en comentarios del PR.
 - Requerir Work Item vinculado.
 - Requerir que el build de validacion (`azure-pipelines.yml`) pase.
 - Resolver comentarios antes de completar.
