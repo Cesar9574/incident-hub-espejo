@@ -85,11 +85,15 @@ stages:
             workingDirectory: frontend
             displayName: Seguridad de dependencias (frontend)
 
-          - script: |
-              mkdir -p $(Build.ArtifactStagingDirectory)/pkg
-              cp -r backend/src backend/package.json backend/package-lock.json $(Build.ArtifactStagingDirectory)/pkg/
-              cp -r frontend/dist $(Build.ArtifactStagingDirectory)/pkg/public
-              cp -r database devops/smoke-test.sh $(Build.ArtifactStagingDirectory)/pkg/
+          # Fix AB#31: el agente es Windows; `script` usa cmd.exe y no entiende mkdir -p ni cp -r.
+          - powershell: |
+              $pkg = "$(Build.ArtifactStagingDirectory)\pkg"
+              New-Item -ItemType Directory -Force -Path $pkg | Out-Null
+              Copy-Item backend\src -Destination "$pkg\src" -Recurse
+              Copy-Item backend\package.json, backend\package-lock.json -Destination $pkg
+              Copy-Item frontend\dist -Destination "$pkg\public" -Recurse
+              Copy-Item database -Destination "$pkg\database" -Recurse
+              Copy-Item devops\smoke-test.sh -Destination $pkg
             displayName: Preparar contenido del paquete
 
           - task: ArchiveFiles@2
@@ -125,14 +129,22 @@ stages:
               steps:
                 - download: current
                   artifact: $(ARTIFACT_NAME)
-                - script: |
-                    mkdir -p $(Pipeline.Workspace)/qa
-                    unzip -o $(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.zip -d $(Pipeline.Workspace)/qa
+                - task: NodeTool@0
+                  displayName: Instalar Node $(NODE_VERSION)
+                  inputs:
+                    versionSpec: $(NODE_VERSION)
+                - powershell: |
+                    $dest = "$(Pipeline.Workspace)\qa"
+                    New-Item -ItemType Directory -Force -Path $dest | Out-Null
+                    $zip = Get-ChildItem "$(Pipeline.Workspace)\$(ARTIFACT_NAME)\*.zip" | Select-Object -First 1
+                    Expand-Archive -Path $zip.FullName -DestinationPath $dest -Force
                   displayName: Desplegar paquete en carpeta de QA
-                - script: |
-                    cd $(Pipeline.Workspace)/qa
+                - powershell: |
+                    Set-Location "$(Pipeline.Workspace)\qa"
                     npm ci --omit=dev --prefix .
-                    bash smoke-test.sh
+                    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+                    & "C:\Program Files\Git\bin\bash.exe" smoke-test.sh
+                    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
                   displayName: Smoke test de QA
                   # El smoke test levanta la API sin DATABASE_URL (modo memoria) para validar el arranque
 
@@ -155,8 +167,10 @@ stages:
               steps:
                 - download: current
                   artifact: $(ARTIFACT_NAME)
-                - script: |
-                    mkdir -p $(Pipeline.Workspace)/prod
-                    unzip -o $(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.zip -d $(Pipeline.Workspace)/prod
-                    echo "Paquete listo en produccion (simulado). DATABASE_URL llega desde el variable group, nunca desde el repo."
+                - powershell: |
+                    $dest = "$(Pipeline.Workspace)\prod"
+                    New-Item -ItemType Directory -Force -Path $dest | Out-Null
+                    $zip = Get-ChildItem "$(Pipeline.Workspace)\$(ARTIFACT_NAME)\*.zip" | Select-Object -First 1
+                    Expand-Archive -Path $zip.FullName -DestinationPath $dest -Force
+                    Write-Host "Paquete listo en produccion (simulado). DATABASE_URL llega desde el variable group, nunca desde el repo."
                   displayName: Desplegar paquete (simulado)
