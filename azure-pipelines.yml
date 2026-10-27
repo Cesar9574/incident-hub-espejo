@@ -1,0 +1,162 @@
+# Pipeline de IT Incident Hub: CI + empaquetado + liberacion controlada
+# Pool autohospedado: crear el pool y el agente con devops/setup-self-hosted-agent.sh|.ps1
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+      - release/*
+  tags:
+    include:
+      - v*
+
+pr:
+  branches:
+    include:
+      - main
+
+parameters:
+  - name: agentPool
+    displayName: Pool del agente autohospedado
+    type: string
+    default: SelfHosted-Pool
+
+variables:
+  NODE_VERSION: '22.x'
+  ARTIFACT_NAME: incident-hub
+
+stages:
+  # ---------------------------------------------------------------- BUILD
+  - stage: Build
+    displayName: Build y calidad
+    jobs:
+      - job: ci
+        displayName: CI (self-hosted)
+        pool:
+          name: ${{ parameters.agentPool }}
+        steps:
+          - checkout: self
+            displayName: Checkout del repositorio
+
+          - task: NodeTool@0
+            displayName: Instalar Node $(NODE_VERSION)
+            inputs:
+              versionSpec: $(NODE_VERSION)
+
+          - script: npm ci
+            workingDirectory: backend
+            displayName: Restaurar dependencias (backend)
+
+          - script: npm ci
+            workingDirectory: frontend
+            displayName: Restaurar dependencias (frontend)
+
+          - script: npm run lint
+            workingDirectory: backend
+            displayName: Lint backend
+
+          - script: npm run lint
+            workingDirectory: frontend
+            displayName: Lint frontend
+
+          - script: npm run build
+            workingDirectory: frontend
+            displayName: Build frontend
+
+          - script: node --test --test-reporter=junit --test-reporter-destination=$(System.DefaultWorkingDirectory)/test-results.xml ../tests/*.test.js
+            workingDirectory: backend
+            displayName: Pruebas automatizadas
+
+          - task: PublishTestResults@2
+            displayName: Publicar resultados de pruebas
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: test-results.xml
+              failTaskOnFailedTests: true
+
+          # Revision de dependencias: falla si hay vulnerabilidades HIGH o CRITICAL
+          - script: npm audit --audit-level=high
+            workingDirectory: backend
+            displayName: Seguridad de dependencias (backend)
+
+          - script: npm audit --audit-level=high
+            workingDirectory: frontend
+            displayName: Seguridad de dependencias (frontend)
+
+          - script: |
+              mkdir -p $(Build.ArtifactStagingDirectory)/pkg
+              cp -r backend/src backend/package.json backend/package-lock.json $(Build.ArtifactStagingDirectory)/pkg/
+              cp -r frontend/dist $(Build.ArtifactStagingDirectory)/pkg/public
+              cp -r database devops/smoke-test.sh $(Build.ArtifactStagingDirectory)/pkg/
+            displayName: Preparar contenido del paquete
+
+          - task: ArchiveFiles@2
+            displayName: Empaquetar (zip)
+            inputs:
+              rootFolderOrFile: $(Build.ArtifactStagingDirectory)/pkg
+              includeRootFolder: false
+              archiveType: zip
+              archiveFile: $(Build.ArtifactStagingDirectory)/$(ARTIFACT_NAME)-$(Build.BuildNumber).zip
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publicar artefacto
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/$(ARTIFACT_NAME)-$(Build.BuildNumber).zip
+              artifact: $(ARTIFACT_NAME)
+
+  # ------------------------------------------------------------------- QA
+  - stage: Deploy_QA
+    displayName: Despliegue a QA
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    variables:
+      - group: incident-hub-secrets   # Library: DATABASE_URL (secreta), etc.
+    jobs:
+      - deployment: qa
+        displayName: QA
+        pool:
+          name: ${{ parameters.agentPool }}
+        environment: incident-hub-qa   # sin aprobacion: validacion automatica con smoke test
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: $(ARTIFACT_NAME)
+                - script: |
+                    mkdir -p $(Pipeline.Workspace)/qa
+                    unzip -o $(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.zip -d $(Pipeline.Workspace)/qa
+                  displayName: Desplegar paquete en carpeta de QA
+                - script: |
+                    cd $(Pipeline.Workspace)/qa
+                    npm ci --omit=dev --prefix .
+                    bash smoke-test.sh
+                  displayName: Smoke test de QA
+                  # El smoke test levanta la API sin DATABASE_URL (modo memoria) para validar el arranque
+
+  # ----------------------------------------------------------------- PROD
+  - stage: Deploy_PROD
+    displayName: Despliegue a Produccion
+    dependsOn: Deploy_QA
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    variables:
+      - group: incident-hub-secrets
+    jobs:
+      - deployment: prod
+        displayName: Produccion
+        pool:
+          name: ${{ parameters.agentPool }}
+        environment: incident-hub-prod   # configurar Approvals and checks (aprobador manual)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: $(ARTIFACT_NAME)
+                - script: |
+                    mkdir -p $(Pipeline.Workspace)/prod
+                    unzip -o $(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.zip -d $(Pipeline.Workspace)/prod
+                    echo "Paquete listo en produccion (simulado). DATABASE_URL llega desde el variable group, nunca desde el repo."
+                  displayName: Desplegar paquete (simulado)
