@@ -128,8 +128,11 @@ stages:
                 - download: current
                   artifact: $(ARTIFACT_NAME)
                 - powershell: |
-                    mkdir -p $(Pipeline.Workspace)/qa
-                    unzip -o $(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.zip -d $(Pipeline.Workspace)/qa
+                    if (!(Test-Path "$(Pipeline.Workspace)/qa")) { 
+                        New-Item -ItemType Directory -Force -Path "$(Pipeline.Workspace)/qa" 
+                    }
+                    $zipFile = Get-ChildItem -Path "$(Pipeline.Workspace)/$(ARTIFACT_NAME)" -Filter "*.zip" | Select-Object -First 1
+                    Expand-Archive -Path $zipFile.FullName -DestinationPath "$(Pipeline.Workspace)/qa" -Force
                   displayName: Desplegar paquete en carpeta de QA
                 - powershell: |
                     cd $(Pipeline.Workspace)/qa
@@ -158,7 +161,10 @@ stages:
                 - download: current
                   artifact: $(ARTIFACT_NAME)
                 - powershell: |
-                    mkdir -p $(Pipeline.Workspace)/prod
-                    unzip -o $(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.zip -d $(Pipeline.Workspace)/prod
-                    echo "Paquete listo en produccion (simulado). DATABASE_URL llega desde el variable group, nunca desde el repo."
+                    if (!(Test-Path "$(Pipeline.Workspace)/prod")) { 
+                        New-Item -ItemType Directory -Force -Path "$(Pipeline.Workspace)/prod" 
+                    }
+                    $zipFile = Get-ChildItem -Path "$(Pipeline.Workspace)/$(ARTIFACT_NAME)" -Filter "*.zip" | Select-Object -First 1
+                    Expand-Archive -Path $zipFile.FullName -DestinationPath "$(Pipeline.Workspace)/prod" -Force
+                    Write-Output "Paquete listo en produccion (simulado). DATABASE_URL llega desde el variable group, nunca desde el repo."
                   displayName: Desplegar paquete (simulado)
