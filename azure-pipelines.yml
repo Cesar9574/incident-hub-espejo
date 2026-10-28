@@ -85,7 +85,7 @@ stages:
             workingDirectory: frontend
             displayName: Seguridad de dependencias (frontend)
 
-          - script: |
+          - powershell: |
               mkdir -p $(Build.ArtifactStagingDirectory)/pkg
               Copy-Item -Recurse -Force backend/src backend/package.json backend/package-lock.json $(Build.ArtifactStagingDirectory)/pkg/
               Copy-Item -Recurse -Force frontend/dist $(Build.ArtifactStagingDirectory)/pkg/public
@@ -125,11 +125,11 @@ stages:
               steps:
                 - download: current
                   artifact: $(ARTIFACT_NAME)
-                - script: |
+                - powershell: |
                     mkdir -p $(Pipeline.Workspace)/qa
                     unzip -o $(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.zip -d $(Pipeline.Workspace)/qa
                   displayName: Desplegar paquete en carpeta de QA
-                - script: |
+                - powershell: |
                     cd $(Pipeline.Workspace)/qa
                     npm ci --omit=dev --prefix .
                     bash smoke-test.sh
@@ -155,7 +155,7 @@ stages:
               steps:
                 - download: current
                   artifact: $(ARTIFACT_NAME)
-                - script: |
+                - powershell: |
                     mkdir -p $(Pipeline.Workspace)/prod
                     unzip -o $(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.zip -d $(Pipeline.Workspace)/prod
                     echo "Paquete listo en produccion (simulado). DATABASE_URL llega desde el variable group, nunca desde el repo."
