@@ -86,11 +86,13 @@ stages:
             displayName: Seguridad de dependencias (frontend)
 
           - powershell: |
-              mkdir -p $(Build.ArtifactStagingDirectory)/pkg
-              if (!(Test-Path pkg)) { New-Item -ItemType Directory -Path pkg }`n    if (!(Test-Path pkg)) { New-Item -ItemType Directory -Path pkg }; Copy-Item -Recurse -Force backend/src -Destination pkg/; Copy-Item -Force backend/package.json -Destination pkg/; Copy-Item -Force backend/package-lock.json -Destination pkg/
-              if (!(Test-Path pkg)) { New-Item -ItemType Directory -Path pkg }`n    if (!(Test-Path pkg)) { New-Item -ItemType Directory -Path pkg }; Copy-Item -Recurse -Force backend/src -Destination pkg/; Copy-Item -Force backend/package.json -Destination pkg/; Copy-Item -Force backend/package-lock.json -Destination pkg/
-              if (!(Test-Path pkg)) { New-Item -ItemType Directory -Path pkg }`n    if (!(Test-Path pkg)) { New-Item -ItemType Directory -Path pkg }; Copy-Item -Recurse -Force backend/src -Destination pkg/; Copy-Item -Force backend/package.json -Destination pkg/; Copy-Item -Force backend/package-lock.json -Destination pkg/
-            displayName: Preparar contenido del paquete
+              if (!(Test-Path $(Build.ArtifactStagingDirectory)/pkg)) { 
+                  New-Item -ItemType Directory -Force -Path $(Build.ArtifactStagingDirectory)/pkg 
+              }
+              Copy-Item -Recurse -Force backend/src -Destination $(Build.ArtifactStagingDirectory)/pkg/
+              Copy-Item -Force backend/package.json -Destination $(Build.ArtifactStagingDirectory)/pkg/
+              Copy-Item -Force backend/package-lock.json -Destination $(Build.ArtifactStagingDirectory)/pkg/
+            displayName: 'Preparar contenido del paquete'
 
           - task: ArchiveFiles@2
             displayName: Empaquetar (zip)
