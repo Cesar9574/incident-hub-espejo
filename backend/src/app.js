@@ -5,8 +5,10 @@ const { validarIncidente, validarEstado, validarComentario } = require('./valida
 
 function crearApp(repo) {
   const app = express();
-  app.use(cors());
-  app.use(express.json());
+  // DT-05: CORS restringido por variable de entorno y limite de tamano del body
+  const origenes = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()) : true;
+  app.use(cors({ origin: origenes }));
+  app.use(express.json({ limit: '100kb' }));
 
   const idParam = (req) => {
     const n = Number(req.params.id);
