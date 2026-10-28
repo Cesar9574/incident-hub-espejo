@@ -24,16 +24,27 @@ function crearPgRepo(connectionString) {
 
   return {
     async crearIncidente(d) {
-      const { rows } = await pool.query(
-        `INSERT INTO incidentes (titulo, descripcion, categoria, prioridad, usuario)
-         VALUES ($1,$2,$3,$4,$5) RETURNING id`,
-        [d.titulo.trim(), d.descripcion.trim(), d.categoria, d.prioridad, d.usuario.trim()]
-      );
-      await pool.query(
-        `INSERT INTO comentarios (incidente_id, autor, texto) VALUES ($1,'sistema','Incidente creado')`,
-        [rows[0].id]
-      );
-      return this.obtenerIncidente(rows[0].id);
+      // DT-06: alta del incidente + primera entrada de bitacora en una sola transaccion
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        const { rows } = await client.query(
+          `INSERT INTO incidentes (titulo, descripcion, categoria, prioridad, usuario)
+           VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+          [d.titulo.trim(), d.descripcion.trim(), d.categoria, d.prioridad, d.usuario.trim()]
+        );
+        await client.query(
+          `INSERT INTO comentarios (incidente_id, autor, texto) VALUES ($1,'sistema','Incidente creado')`,
+          [rows[0].id]
+        );
+        await client.query('COMMIT');
+        return this.obtenerIncidente(rows[0].id);
+      } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+      } finally {
+        client.release();
+      }
     },
     async listarIncidentes(f = {}) {
       const cond = [];
