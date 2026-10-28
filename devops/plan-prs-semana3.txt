@@ -1,0 +1,3 @@
+feature/estrategia-release|301|Documenta estrategia de release y ambientes|docs/estrategia-release.md devops/crear-tags-semver.sh
+docs/changelog-y-readme-final|302|Actualiza CHANGELOG y README para v1.0.0|CHANGELOG.md README.md
+fix/estabilizacion-final|303|Ajustes finales de estabilizacion antes de v1.0.0|backend frontend

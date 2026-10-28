@@ -1,0 +1,13 @@
+# Postgres local para desarrollo. La clave viene de la variable POSTGRES_PASSWORD (no se escribe aqui).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: incident_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD en tu entorno}
+      POSTGRES_DB: incident_hub
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro

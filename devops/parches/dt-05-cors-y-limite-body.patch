@@ -1,0 +1,27 @@
+diff --git a/backend/.env.example b/backend/.env.example
+index b8bf934..7ecd9ac 100644
+--- a/backend/.env.example
++++ b/backend/.env.example
+@@ -2,3 +2,5 @@
+ PORT=3000
+ # Si DATABASE_URL esta vacia el API usa memoria (solo desarrollo/pruebas)
+ DATABASE_URL=postgresql://incident_user:CAMBIAR@localhost:5432/incident_hub
++# Origenes permitidos por CORS (separados por coma). Obligatorio definirlo en QA/PROD
++CORS_ORIGIN=http://localhost:5173
+diff --git a/backend/src/app.js b/backend/src/app.js
+index e30e642..3f110ca 100644
+--- a/backend/src/app.js
++++ b/backend/src/app.js
+@@ -5,8 +5,10 @@ const { validarIncidente, validarEstado, validarComentario } = require('./valida
+ 
+ function crearApp(repo) {
+   const app = express();
+-  app.use(cors());
+-  app.use(express.json());
++  // DT-05: CORS restringido por variable de entorno y limite de tamano del body
++  const origenes = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()) : true;
++  app.use(cors({ origin: origenes }));
++  app.use(express.json({ limit: '100kb' }));
+ 
+   const idParam = (req) => {
+     const n = Number(req.params.id);

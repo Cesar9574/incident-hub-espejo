@@ -1,0 +1,5 @@
+# rama|AB_ID|mensaje|rutas   (reemplaza los AB_ID por los de tus Tasks reales)
+feature/esquema-bd|101|Agrega esquema SQL y datos semilla|database
+feature/api-incidentes|102|API REST: alta, consulta y filtros de incidentes|backend/package.json backend/package-lock.json backend/eslint.config.js backend/.env.example backend/src tests
+feature/frontend-incidentes|103|Frontend React: formulario, lista, detalle y dashboard|frontend
+docs/arquitectura-y-branching|104|Documenta arquitectura y estrategia de ramas|docs/arquitectura.md docs/branching.md README.md

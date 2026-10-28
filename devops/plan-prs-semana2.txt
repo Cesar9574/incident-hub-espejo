@@ -1,0 +1,5 @@
+feature/pipeline-ci|201|Agrega azure-pipelines.yml con build, pruebas y artefacto|azure-pipelines.yml devops/smoke-test.sh
+feature/github-actions|202|Agrega workflows de GitHub Actions y plantilla de PR|.github
+fix/pipeline-fallo-controlado|203|Corrige el fallo del pipeline detectado en CI|backend
+refactor/deuda-tecnica|204|Resuelve deuda tecnica DT-01 y DT-02|backend/src docs/deuda-tecnica.md
+docs/seguridad-dependencias|205|Documenta seguridad, secretos y analisis de dependencias|docs/seguridad.md docs/dependencias.md
