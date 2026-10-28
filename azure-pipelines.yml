@@ -87,9 +87,9 @@ stages:
 
           - script: |
               mkdir -p $(Build.ArtifactStagingDirectory)/pkg
-              cp -r backend/src backend/package.json backend/package-lock.json $(Build.ArtifactStagingDirectory)/pkg/
-              cp -r frontend/dist $(Build.ArtifactStagingDirectory)/pkg/public
-              cp -r database devops/smoke-test.sh $(Build.ArtifactStagingDirectory)/pkg/
+              Copy-Item -Recurse -Force backend/src backend/package.json backend/package-lock.json $(Build.ArtifactStagingDirectory)/pkg/
+              Copy-Item -Recurse -Force frontend/dist $(Build.ArtifactStagingDirectory)/pkg/public
+              Copy-Item -Recurse -Force database devops/smoke-test.sh $(Build.ArtifactStagingDirectory)/pkg/
             displayName: Preparar contenido del paquete
 
           - task: ArchiveFiles@2
