@@ -1,21 +1,27 @@
 # Fallo controlado del pipeline
 
-Objetivo del enunciado: conservar evidencia de un pipeline fallido, su diagnostico, la correccion y una ejecucion exitosa.
+El enunciado pide evidencia de un pipeline fallido, su diagnostico, correccion y ejecucion exitosa. Hubo dos ciclos reales.
 
-## Procedimiento seguido
-1. Rama `fix/pipeline-fallo-controlado` desde `main`, ligada a un Work Item de tipo Bug.
-2. **Commit 1 (provoca el fallo):** en `tests/api.test.js`, en la prueba "crear incidente devuelve 201 y estado NUEVO" se cambia `assert.equal(r.data.estado, 'NUEVO')` por `'ASIGNADO'`.
-3. Se abre el PR: el pipeline de validacion corre y **falla** en el paso "Pruebas automatizadas". (Guardar link del run fallido y captura del log.)
-4. **Diagnostico:** el log muestra `Expected values to be strictly equal: 'NUEVO' !== 'ASIGNADO'` en la prueba de creacion. Un incidente nuevo debe nacer en NUEVO segun el flujo definido, asi que el error esta en la prueba, no en la API.
-5. **Commit 2 (correccion):** se restaura el valor `'NUEVO'`.
-6. El pipeline vuelve a correr y **pasa** (link del run exitoso).
-7. Se completa el PR con squash.
+## Ciclo 1 - repo incident-hub-semana2
+| Item | Detalle |
+|------|---------|
+| Work item | Bug 31 |
+| Run fallido | 20261027.1 (buildId 1), paso "Preparar contenido del paquete" |
+| Error | cmd.exe: "cp" no se reconoce como un comando interno o externo |
+| Causa | El paso script corre con cmd.exe en el agente Windows y el YAML tenia comandos de Linux (mkdir -p, cp -r, unzip) |
+| Correccion | PR !10 (rama fix/pipeline-fallo-controlado): pasos pasados a powershell, Git Bash para el smoke test y .gitattributes con eol=lf |
+| Run exitoso | 20261027.2 (buildId 2): Build, QA y Produccion con aprobacion manual |
 
-## Evidencia a registrar
-| Item | Link / captura |
-|------|----------------|
-| Run fallido | (completar) |
-| Paso que fallo y mensaje | Pruebas automaticas / `NUEVO !== ASIGNADO` |
-| Commit que corrige | (completar hash) |
-| Run exitoso | (completar) |
-| PR | (completar) |
+## Ciclo 2 - repo incident-hub-final
+| Item | Detalle |
+|------|---------|
+| Work item | Bug 38 |
+| Run fallido | 20261028.7 (buildId 20), etapa QA, paso "Smoke test de QA" |
+| Causa | Los pasos de QA todavia usaban comandos pensados para Linux/bash que no existen en el agente Windows |
+| Correccion | Siete commits fix en main (58170f5 a 2b7a15a): Copy-Item, Expand-Archive, bloques powershell y smoke test con node -e |
+| Run exitoso | 20261028.8 (buildId 21), commit 2b7a15a: Build, QA y Produccion tras aprobacion manual |
+
+Nota: los siete commits del ciclo 2 se subieron directo a main porque las politicas de rama todavia no estaban activas en este repositorio. Se registro el Bug 38, se activaron las politicas y desde entonces todo entra por Pull Request.
+
+## Evidencia
+Runs 20261027.1, 20261027.2, 20261028.7 y 20261028.8 en Azure Pipelines (los de la semana 2 estan marcados como retenidos indefinidamente).
