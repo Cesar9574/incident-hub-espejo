@@ -22,13 +22,13 @@ Cada version es una etiqueta anotada sobre `main` (`devops/crear-tags-semver.sh`
 |----------|-------------------|---------------------|---------|
 | Desarrollo | (local) | Cada desarrollador, con `npm run dev` | Lint y pruebas locales |
 | CI / PR | (pipeline de validacion) | Cada Pull Request | Build + pruebas + audit deben pasar |
-| QA | `incident-hub-qa` | Automatico al integrar a `main` | Smoke test (`devops/smoke-test.sh`) |
+| QA | `incident-hub-qa` | Automatico al integrar a `main` | Verificacion de arranque (Node y dependencias de produccion); `devops/smoke-test.sh`, que prueba la API, queda como mejora futura |
 | Produccion | `incident-hub-prod` | Despues de QA exitoso | **Aprobacion manual** (Approvals and checks) |
 
 ## Flujo de liberacion
 1. PR aprobado y con pipeline verde -> merge a `main`.
 2. El pipeline construye **una sola vez** el artefacto `incident-hub-<build>.zip`; ese mismo artefacto se promueve de ambiente en ambiente (no se reconstruye).
-3. Etapa QA: despliegue automatico + smoke test.
+3. Etapa QA: despliegue automatico + verificacion de arranque.
 4. Etapa PROD: queda en espera; un aprobador revisa que QA este bien, el changelog y los work items, y aprueba o rechaza.
 5. Se crea el tag SemVer y el release (GitHub Release / Azure Release notes) con el changelog.
 

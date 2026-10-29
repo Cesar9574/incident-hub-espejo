@@ -1,19 +1,20 @@
 # Indice de evidencias
 
-Completar con los links reales de Azure DevOps / GitHub.
+Base: https://dev.azure.com/cgonzalezg30/IncidentHub
 
 | Requisito | Evidencia | Link |
 |-----------|-----------|------|
-| Azure Boards (2/4/8/16) | Backlog y tablero | |
-| Git: ramas feature/fix/refactor | Repos -> Branches | |
-| Trazabilidad AB#ID | Commits y PR con Work Items vinculados | |
-| Pull Requests (min. 6) con revision | Repos -> Pull requests (completed) | |
-| Deuda tecnica (5, resolver 2) | docs/deuda-tecnica.md + PRs | |
-| Azure Pipelines completo | Run exitoso con artefacto | |
-| Fallo controlado | docs/fallo-controlado.md (run fallido y exitoso) | |
-| Self-hosted agent | Organization settings -> Agent pools -> SelfHosted-Pool | |
-| Secretos protegidos | Library -> incident-hub-secrets (valores ocultos) | |
-| GitHub Actions | Pestana Actions del repo espejo | |
-| Dependencias | docs/dependencias.md + logs de npm audit | |
-| SemVer hasta v1.0.0 | Tags del repo + CHANGELOG.md | |
-| Estrategia de release y aprobacion | docs/estrategia-release.md + run con aprobacion en PROD | |
+| Azure Boards (2/4/8/16) | Backlog y tablero (work items 1 al 40) | https://dev.azure.com/cgonzalezg30/IncidentHub/_boards |
+| Git: ramas feature/fix/refactor/docs | Branches de cada repo | https://dev.azure.com/cgonzalezg30/IncidentHub/_git/incident-hub-semana2/branches |
+| Trazabilidad AB#ID | PR con work items vinculados (ej. PR 12 con Task 37) | https://dev.azure.com/cgonzalezg30/IncidentHub/_git/incident-hub-semana2/pullrequests?_a=completed |
+| Pull Requests (min. 6) con revision | 14 PR completados: semana1 (1 al 5), semana2 (6 al 13), final (14) | https://dev.azure.com/cgonzalezg30/IncidentHub/_git/incident-hub-semana1/pullrequests?_a=completed |
+| Deuda tecnica (6 registradas, 2 resueltas) | docs/deuda-tecnica.md, PR 11 (AB#36) y PR 12 (AB#37) | https://dev.azure.com/cgonzalezg30/IncidentHub/_workitems/edit/37 |
+| Azure Pipelines completo | Run exitoso Build, QA y PROD con artefacto | https://dev.azure.com/cgonzalezg30/IncidentHub/_build/results?buildId=21 |
+| Fallo controlado | Ciclo 1: run 1 fallido y run 2 exitoso (semana2). Ciclo 2: run 20 fallido y run 21 exitoso (final). Detalle en docs/fallo-controlado.md | https://dev.azure.com/cgonzalezg30/IncidentHub/_build/results?buildId=20 |
+| Self-hosted agent | Pool SelfHosted-Pool, agente-local-01 | https://dev.azure.com/cgonzalezg30/IncidentHub/_settings/agentpools |
+| Secretos protegidos | Library: incident-hub-secrets (valores ocultos) | https://dev.azure.com/cgonzalezg30/IncidentHub/_library |
+| GitHub Actions | Workflows en el repo espejo | https://github.com/Cesar9574/incident-hub-espejo/actions |
+| Dependencias | docs/dependencias.md y npm audit en el pipeline | docs/dependencias.md |
+| SemVer hasta v1.0.0 | Etiquetas del repo y CHANGELOG.md | https://dev.azure.com/cgonzalezg30/IncidentHub/_git/incident-hub-final/tags |
+| Estrategia de release y aprobacion | docs/estrategia-release.md y aprobacion manual en incident-hub-prod | https://dev.azure.com/cgonzalezg30/IncidentHub/_environments |
+| Politicas de rama | Branch policies de main | https://dev.azure.com/cgonzalezg30/IncidentHub/_settings/repositories |
